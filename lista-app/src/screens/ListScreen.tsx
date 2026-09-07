@@ -1,0 +1,151 @@
+import { ArrowLeft, Check, Trash2 } from "lucide-react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Category, ListItem } from "../data/types";
+import { AWNING, BRICK, INK, MUTED, PAPER, PAPER_DARK, SAGE } from "../theme/colors";
+
+type Props = {
+  list: ListItem[];
+  categories: Category[];
+  onBack: () => void;
+  onToggleBought: (id: string, categoryId: string) => void;
+  onRemove: (id: string, categoryId: string) => void;
+  onClear: () => void;
+};
+
+export function ListScreen({ list, categories, onBack, onToggleBought, onRemove, onClear }: Props) {
+  const byCategory = categories
+    .map((cat) => ({ cat, items: list.filter((i) => i.categoryId === cat.id) }))
+    .filter((g) => g.items.length > 0);
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.iconGhost} onPress={onBack} accessibilityLabel="Volver">
+          <ArrowLeft size={20} color={PAPER} />
+        </TouchableOpacity>
+        <View style={{ alignItems: "center" }}>
+          <Text style={styles.logo}>TU LISTA</Text>
+          <Text style={styles.tagline}>
+            {list.length} producto{list.length === 1 ? "" : "s"}
+          </Text>
+        </View>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+        {byCategory.length === 0 && (
+          <Text style={styles.emptyState}>
+            Todavía no agregaste nada. Volvé y deslizá a la derecha lo que necesites.
+          </Text>
+        )}
+        {byCategory.map(({ cat, items }) => (
+          <View key={cat.id} style={{ marginBottom: 18 }}>
+            <View style={styles.groupHeader}>
+              <View style={[styles.dot, { backgroundColor: cat.color }]} />
+              <Text style={styles.groupHeaderText}>{cat.name}</Text>
+            </View>
+            {items.map((it) => (
+              <View key={it.id} style={styles.row}>
+                <TouchableOpacity
+                  style={[
+                    styles.checkbox,
+                    {
+                      backgroundColor: it.bought ? SAGE : "transparent",
+                      borderColor: it.bought ? SAGE : MUTED,
+                    },
+                  ]}
+                  onPress={() => onToggleBought(it.id, it.categoryId)}
+                >
+                  {it.bought && <Check size={14} color={PAPER} />}
+                </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.itemName,
+                    it.bought && { textDecorationLine: "line-through", color: MUTED },
+                  ]}
+                >
+                  {it.name}
+                </Text>
+                <TouchableOpacity
+                  style={styles.trashBtn}
+                  onPress={() => onRemove(it.id, it.categoryId)}
+                  accessibilityLabel={`Borrar ${it.name}`}
+                >
+                  <Trash2 size={16} color={MUTED} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+
+      {list.length > 0 && (
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.dangerBtn} onPress={onClear}>
+            <Text style={styles.dangerBtnText}>Vaciar lista</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: PAPER },
+  header: {
+    backgroundColor: AWNING,
+    paddingTop: 18,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  iconGhost: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 12,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logo: { fontSize: 22, letterSpacing: 1.5, color: PAPER, fontWeight: "800" },
+  tagline: { fontSize: 12, color: "#C9CDBE", marginTop: 2 },
+  body: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  emptyState: { color: MUTED, fontSize: 14, textAlign: "center", marginTop: 40 },
+  groupHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  groupHeaderText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: MUTED,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  dot: { width: 8, height: 8, borderRadius: 999, marginRight: 8 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: PAPER_DARK,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 7,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  itemName: { flex: 1, marginLeft: 10, fontSize: 14, color: INK },
+  trashBtn: { padding: 6 },
+  footer: { paddingHorizontal: 20, paddingBottom: 20 },
+  dangerBtn: {
+    borderWidth: 1.5,
+    borderColor: BRICK,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  dangerBtnText: { color: BRICK, fontSize: 14, fontWeight: "600" },
+});

@@ -1,0 +1,9 @@
+export const INK = "#20261F";
+export const PAPER = "#F1EEE2";
+export const PAPER_DARK = "#E7E2D0";
+export const AWNING = "#17352A";
+export const AWNING_DARK = "#0F241C";
+export const MUSTARD = "#E3A73E";
+export const SAGE = "#4C7A3F";
+export const BRICK = "#A6402F";
+export const MUTED = "#6B6558";
