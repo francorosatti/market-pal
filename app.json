@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "lista-app",
-    "slug": "lista-app",
+    "name": "MarketPal",
+    "slug": "market-pal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +17,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.listaapp"
+      "package": "com.anonymous.marketpal"
     },
     "web": {
       "favicon": "./assets/favicon.png"

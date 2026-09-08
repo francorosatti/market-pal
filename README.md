@@ -1,4 +1,4 @@
-# lista-app
+# MarketPal
 
 A personal, fully offline shopping-list app for React Native (Expo) — swipe through a categorized product catalog to build your shopping list.
 

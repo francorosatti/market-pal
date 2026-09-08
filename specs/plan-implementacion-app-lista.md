@@ -132,7 +132,7 @@ funcionando offline aunque con resultados más simples (ver abajo).
 ## 5. Estructura de carpetas
 
 ```
-lista-app/
+MarketPal/
   App.tsx
   src/
     theme/
@@ -171,7 +171,7 @@ Cada fase es un pedido independiente. Recomiendo hacer commits chicos por
 fase y probar en el teléfono antes de seguir.
 
 - [ ] **Fase 0 — Setup del proyecto**
-  - `npx create-expo-app lista-app -t expo-template-blank-typescript`
+  - `npx create-expo-app MarketPal -t expo-template-blank-typescript`
   - Instalar dependencias de la sección 1
   - Configurar `expo-dev-client` y confirmar que corre en el teléfono vía
     `npx expo run:android` (o `run:ios`)
