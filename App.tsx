@@ -32,7 +32,13 @@ export default function App() {
   const [openTripId, setOpenTripId] = useState<string | null>(null);
 
   const { categories, setCategories, loaded: catalogLoaded } = useCatalog();
-  const { viewMode, setViewMode, loaded: settingsLoaded } = useSettings();
+  const {
+    viewMode,
+    setViewMode,
+    listSortMode,
+    setListSortMode,
+    loaded: settingsLoaded,
+  } = useSettings();
   const {
     activeTrips,
     historyTrips,
@@ -203,6 +209,10 @@ export default function App() {
           onAdd={() => setShowAdd(true)}
           viewMode={viewMode}
           onToggleViewMode={() => setViewMode((v) => (v === "swipe" ? "list" : "swipe"))}
+          listSortMode={listSortMode}
+          onToggleListSortMode={() =>
+            setListSortMode((m) => (m === "freq" ? "alpha" : "freq"))
+          }
         />
       )}
 

@@ -7,12 +7,14 @@ const TRIPS_KEY = "trips";
 const SETTINGS_KEY = "settings";
 
 export type ViewMode = "swipe" | "list";
+export type ListSortMode = "freq" | "alpha";
 
 export type Settings = {
   viewMode: ViewMode;
+  listSortMode: ListSortMode;
 };
 
-const DEFAULT_SETTINGS: Settings = { viewMode: "swipe" };
+const DEFAULT_SETTINGS: Settings = { viewMode: "swipe", listSortMode: "freq" };
 
 export type TripsData = {
   trips: Record<string, Trip>;
@@ -76,7 +78,9 @@ export async function getSettings(): Promise<Settings> {
   try {
     const parsed = JSON.parse(raw);
     if (parsed && (parsed.viewMode === "swipe" || parsed.viewMode === "list")) {
-      return { viewMode: parsed.viewMode };
+      const listSortMode: ListSortMode =
+        parsed.listSortMode === "alpha" ? "alpha" : "freq";
+      return { viewMode: parsed.viewMode, listSortMode };
     }
   } catch {
     // JSON corrupto: se ignora y se cae al default

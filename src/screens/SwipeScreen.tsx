@@ -1,4 +1,14 @@
-import { ChevronRight, Home, List, Plus, RotateCcw, ShoppingCart, SquareStack } from "lucide-react-native";
+import {
+  ArrowDownAZ,
+  ChevronRight,
+  Flame,
+  Home,
+  List,
+  Plus,
+  RotateCcw,
+  ShoppingCart,
+  SquareStack,
+} from "lucide-react-native";
 import { useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,7 +17,7 @@ import { CategoryProductList } from "../components/CategoryProductList";
 import { CategoryStrip } from "../components/CategoryStrip";
 import { SwipeCard, SwipeCardHandle } from "../components/SwipeCard";
 import { sortedItems } from "../data/catalogLogic";
-import { ViewMode } from "../data/storage";
+import { ListSortMode, ViewMode } from "../data/storage";
 import { Category, ListItem, Product } from "../data/types";
 import { AWNING, MUSTARD, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
 
@@ -26,6 +36,8 @@ type Props = {
   onAdd: () => void;
   viewMode: ViewMode;
   onToggleViewMode: () => void;
+  listSortMode: ListSortMode;
+  onToggleListSortMode: () => void;
 };
 
 export function SwipeScreen({
@@ -43,6 +55,8 @@ export function SwipeScreen({
   onAdd,
   viewMode,
   onToggleViewMode,
+  listSortMode,
+  onToggleListSortMode,
 }: Props) {
   const cardRef = useRef<SwipeCardHandle>(null);
   const insets = useSafeAreaInsets();
@@ -132,6 +146,21 @@ export function SwipeScreen({
             <SquareStack size={18} color={AWNING} />
           )}
         </TouchableOpacity>
+        {viewMode === "list" && (
+          <TouchableOpacity
+            style={styles.viewModeBtn}
+            onPress={onToggleListSortMode}
+            accessibilityLabel={
+              listSortMode === "freq" ? "Ordenar alfabéticamente" : "Ordenar por frecuencia"
+            }
+          >
+            {listSortMode === "freq" ? (
+              <Flame size={18} color={AWNING} />
+            ) : (
+              <ArrowDownAZ size={18} color={AWNING} />
+            )}
+          </TouchableOpacity>
+        )}
         <CategoryStrip
           categories={categories}
           currentCategoryId={currentCategoryId}
@@ -198,7 +227,12 @@ export function SwipeScreen({
         </>
       ) : (
         <>
-          <CategoryProductList category={currentCategory} list={list} onToggle={handleToggleItem} />
+          <CategoryProductList
+            category={currentCategory}
+            list={list}
+            onToggle={handleToggleItem}
+            sortMode={listSortMode}
+          />
 
           {categories.length > 1 && (
             <TouchableOpacity style={styles.skipBtn} onPress={jumpToNextCategory}>

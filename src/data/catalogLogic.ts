@@ -11,10 +11,14 @@ export const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : 
 
 export const uid = () => `c-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-export const sortedItems = (category: Category): Product[] =>
-  [...category.items].sort(
-    (a, b) => b.freq - a.freq || a.name.localeCompare(b.name, "es")
-  );
+export type SortMode = "freq" | "alpha";
+
+export const sortedItems = (category: Category, mode: SortMode = "freq"): Product[] =>
+  mode === "alpha"
+    ? [...category.items].sort((a, b) => a.name.localeCompare(b.name, "es"))
+    : [...category.items].sort(
+        (a, b) => b.freq - a.freq || a.name.localeCompare(b.name, "es")
+      );
 
 /**
  * Busca un producto por nombre dentro de una categoría, o lo crea.

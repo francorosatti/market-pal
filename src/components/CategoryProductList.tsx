@@ -1,6 +1,6 @@
 import { Check } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { sortedItems } from "../data/catalogLogic";
+import { sortedItems, SortMode } from "../data/catalogLogic";
 import { Category, ListItem, Product } from "../data/types";
 import { INK, MUTED, PAPER_DARK, SAGE } from "../theme/colors";
 
@@ -8,10 +8,11 @@ type Props = {
   category: Category;
   list: ListItem[];
   onToggle: (item: Product, categoryId: string, checked: boolean) => void;
+  sortMode: SortMode;
 };
 
-export function CategoryProductList({ category, list, onToggle }: Props) {
-  const items = sortedItems(category);
+export function CategoryProductList({ category, list, onToggle, sortMode }: Props) {
+  const items = sortedItems(category, sortMode);
   const isInList = (item: Product) =>
     list.some((li) => li.id === item.id && li.categoryId === category.id);
 
