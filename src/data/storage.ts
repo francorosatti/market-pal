@@ -4,6 +4,15 @@ import { Catalog, Trip } from "./types";
 
 const CATALOG_KEY = "catalog";
 const TRIPS_KEY = "trips";
+const SETTINGS_KEY = "settings";
+
+export type ViewMode = "swipe" | "list";
+
+export type Settings = {
+  viewMode: ViewMode;
+};
+
+const DEFAULT_SETTINGS: Settings = { viewMode: "swipe" };
 
 export type TripsData = {
   trips: Record<string, Trip>;
@@ -59,4 +68,22 @@ export async function getTripsData(): Promise<TripsData> {
 
 export async function setTripsData(data: TripsData): Promise<void> {
   await AsyncStorage.setItem(TRIPS_KEY, JSON.stringify(data));
+}
+
+export async function getSettings(): Promise<Settings> {
+  const raw = await AsyncStorage.getItem(SETTINGS_KEY);
+  if (!raw) return DEFAULT_SETTINGS;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && (parsed.viewMode === "swipe" || parsed.viewMode === "list")) {
+      return { viewMode: parsed.viewMode };
+    }
+  } catch {
+    // JSON corrupto: se ignora y se cae al default
+  }
+  return DEFAULT_SETTINGS;
+}
+
+export async function setSettings(settings: Settings): Promise<void> {
+  await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }

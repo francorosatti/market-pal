@@ -43,11 +43,9 @@ export function CategoryStrip({ categories, currentCategoryId, onSelect, indices
 
 const styles = StyleSheet.create({
   strip: {
-    flexGrow: 0,
+    flex: 1,
     maxHeight: 56,
     backgroundColor: PAPER,
-    borderBottomWidth: 1,
-    borderBottomColor: PAPER_DARK,
   },
   stripContent: {
     flexDirection: "row",

@@ -14,6 +14,7 @@ import {
 } from "./src/data/catalogLogic";
 import { Category, Product } from "./src/data/types";
 import { useCatalog } from "./src/hooks/useCatalog";
+import { useSettings } from "./src/hooks/useSettings";
 import { useTrips } from "./src/hooks/useTrips";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { ListScreen } from "./src/screens/ListScreen";
@@ -31,6 +32,7 @@ export default function App() {
   const [openTripId, setOpenTripId] = useState<string | null>(null);
 
   const { categories, setCategories, loaded: catalogLoaded } = useCatalog();
+  const { viewMode, setViewMode, loaded: settingsLoaded } = useSettings();
   const {
     activeTrips,
     historyTrips,
@@ -147,7 +149,7 @@ export default function App() {
     }
   }, [view, openTrip, historyTrips]);
 
-  if (!catalogLoaded || !tripLoaded) {
+  if (!catalogLoaded || !tripLoaded || !settingsLoaded) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color={PAPER} />
@@ -194,10 +196,13 @@ export default function App() {
           indices={indices}
           setIndices={(updater) => setIndices(openTripId!, updater)}
           onAccept={handleAccept}
+          onRemove={handleRemove}
           listCount={list.length}
           onOpenList={() => setView("list")}
           onOpenHome={() => setView("home")}
           onAdd={() => setShowAdd(true)}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode((v) => (v === "swipe" ? "list" : "swipe"))}
         />
       )}
 

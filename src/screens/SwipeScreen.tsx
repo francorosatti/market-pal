@@ -1,13 +1,15 @@
-import { ChevronRight, Home, RotateCcw, ShoppingCart } from "lucide-react-native";
+import { ChevronRight, Home, List, Plus, RotateCcw, ShoppingCart, SquareStack } from "lucide-react-native";
 import { useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomBar } from "../components/BottomBar";
+import { CategoryProductList } from "../components/CategoryProductList";
 import { CategoryStrip } from "../components/CategoryStrip";
 import { SwipeCard, SwipeCardHandle } from "../components/SwipeCard";
 import { sortedItems } from "../data/catalogLogic";
+import { ViewMode } from "../data/storage";
 import { Category, ListItem, Product } from "../data/types";
-import { AWNING, MUSTARD, MUTED, PAPER } from "../theme/colors";
+import { AWNING, MUSTARD, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
 
 type Props = {
   categories: Category[];
@@ -17,10 +19,13 @@ type Props = {
   indices: Record<string, number>;
   setIndices: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
   onAccept: (item: Product, categoryId: string) => void;
+  onRemove: (id: string, categoryId: string) => void;
   listCount: number;
   onOpenList: () => void;
   onOpenHome: () => void;
   onAdd: () => void;
+  viewMode: ViewMode;
+  onToggleViewMode: () => void;
 };
 
 export function SwipeScreen({
@@ -31,10 +36,13 @@ export function SwipeScreen({
   indices,
   setIndices,
   onAccept,
+  onRemove,
   listCount,
   onOpenList,
   onOpenHome,
   onAdd,
+  viewMode,
+  onToggleViewMode,
 }: Props) {
   const cardRef = useRef<SwipeCardHandle>(null);
   const insets = useSafeAreaInsets();
@@ -70,6 +78,14 @@ export function SwipeScreen({
     advance();
   };
 
+  const handleToggleItem = (item: Product, categoryId: string, checked: boolean) => {
+    if (checked) {
+      onAccept(item, categoryId);
+    } else {
+      onRemove(item.id, categoryId);
+    }
+  };
+
   const resetCategory = () => {
     setIndices((prev) => ({ ...prev, [currentCategoryId]: 0 }));
   };
@@ -85,7 +101,9 @@ export function SwipeScreen({
       <View style={[styles.header, { paddingTop: 18 + insets.top }]}>
         <View>
           <Text style={styles.logo}>LA LISTA</Text>
-          <Text style={styles.tagline}>deslizá para armar tu compra</Text>
+          <Text style={styles.tagline}>
+            {viewMode === "swipe" ? "deslizá para armar tu compra" : "tildá para armar tu compra"}
+          </Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.cartBtn} onPress={onOpenHome} accessibilityLabel="Ir al inicio">
@@ -102,66 +120,101 @@ export function SwipeScreen({
         </View>
       </View>
 
-      <CategoryStrip
-        categories={categories}
-        currentCategoryId={currentCategoryId}
-        onSelect={setCurrentCategoryId}
-        indices={indices}
-      />
-
-      <View style={styles.stage}>
-        {currentItem ? (
-          <>
-            {nextItem && (
-              <View style={[styles.backCard, { borderColor: currentCategory.color }]}>
-                <Text style={styles.backCardEmoji}>{currentCategory.emoji}</Text>
-              </View>
-            )}
-            <SwipeCard
-              key={currentItem.id}
-              ref={cardRef}
-              category={currentCategory}
-              item={currentItem}
-              onSwipeLeft={handleSwipeLeft}
-              onSwipeRight={handleSwipeRight}
-            />
-          </>
-        ) : (
-          <View style={[styles.doneCard, { borderColor: currentCategory.color }]}>
-            <Text style={styles.doneEmoji}>{currentCategory.emoji}</Text>
-            <Text style={styles.doneTitle}>¡Terminaste {currentCategory.name}!</Text>
-            <Text style={styles.doneSub}>Repasá de nuevo o pasá a la próxima categoría.</Text>
-            <View style={styles.doneActions}>
-              <TouchableOpacity style={styles.ghostBtn} onPress={resetCategory}>
-                <RotateCcw size={16} color={AWNING} />
-                <Text style={styles.ghostBtnText}>Repasar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.primaryBtn} onPress={jumpToNextCategory}>
-                <Text style={styles.primaryBtnText}>Siguiente</Text>
-                <ChevronRight size={16} color={PAPER} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+      <View style={styles.stripRow}>
+        <TouchableOpacity
+          style={styles.viewModeBtn}
+          onPress={onToggleViewMode}
+          accessibilityLabel={viewMode === "swipe" ? "Ver como lista" : "Ver como swipe"}
+        >
+          {viewMode === "swipe" ? (
+            <List size={18} color={AWNING} />
+          ) : (
+            <SquareStack size={18} color={AWNING} />
+          )}
+        </TouchableOpacity>
+        <CategoryStrip
+          categories={categories}
+          currentCategoryId={currentCategoryId}
+          onSelect={setCurrentCategoryId}
+          indices={indices}
+        />
       </View>
 
-      <Text style={styles.counter}>
-        {currentItem ? `${remaining} producto${remaining === 1 ? "" : "s"} en esta categoría` : ""}
-      </Text>
+      {viewMode === "swipe" ? (
+        <>
+          <View style={styles.stage}>
+            {currentItem ? (
+              <>
+                {nextItem && (
+                  <View style={[styles.backCard, { borderColor: currentCategory.color }]}>
+                    <Text style={styles.backCardEmoji}>{currentCategory.emoji}</Text>
+                  </View>
+                )}
+                <SwipeCard
+                  key={currentItem.id}
+                  ref={cardRef}
+                  category={currentCategory}
+                  item={currentItem}
+                  onSwipeLeft={handleSwipeLeft}
+                  onSwipeRight={handleSwipeRight}
+                />
+              </>
+            ) : (
+              <View style={[styles.doneCard, { borderColor: currentCategory.color }]}>
+                <Text style={styles.doneEmoji}>{currentCategory.emoji}</Text>
+                <Text style={styles.doneTitle}>¡Terminaste {currentCategory.name}!</Text>
+                <Text style={styles.doneSub}>Repasá de nuevo o pasá a la próxima categoría.</Text>
+                <View style={styles.doneActions}>
+                  <TouchableOpacity style={styles.ghostBtn} onPress={resetCategory}>
+                    <RotateCcw size={16} color={AWNING} />
+                    <Text style={styles.ghostBtnText}>Repasar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.primaryBtn} onPress={jumpToNextCategory}>
+                    <Text style={styles.primaryBtnText}>Siguiente</Text>
+                    <ChevronRight size={16} color={PAPER} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
 
-      {currentItem && categories.length > 1 && (
-        <TouchableOpacity style={styles.skipBtn} onPress={jumpToNextCategory}>
-          <Text style={styles.skipBtnText}>Saltar categoría</Text>
-          <ChevronRight size={14} color={MUTED} />
-        </TouchableOpacity>
+          <Text style={styles.counter}>
+            {currentItem ? `${remaining} producto${remaining === 1 ? "" : "s"} en esta categoría` : ""}
+          </Text>
+
+          {currentItem && categories.length > 1 && (
+            <TouchableOpacity style={styles.skipBtn} onPress={jumpToNextCategory}>
+              <Text style={styles.skipBtnText}>Saltar categoría</Text>
+              <ChevronRight size={14} color={MUTED} />
+            </TouchableOpacity>
+          )}
+
+          <BottomBar
+            disabled={!currentItem}
+            onSwipeLeft={() => cardRef.current?.triggerSwipe("left")}
+            onSwipeRight={() => cardRef.current?.triggerSwipe("right")}
+            onAdd={onAdd}
+          />
+        </>
+      ) : (
+        <>
+          <CategoryProductList category={currentCategory} list={list} onToggle={handleToggleItem} />
+
+          {categories.length > 1 && (
+            <TouchableOpacity style={styles.skipBtn} onPress={jumpToNextCategory}>
+              <Text style={styles.skipBtnText}>Saltar categoría</Text>
+              <ChevronRight size={14} color={MUTED} />
+            </TouchableOpacity>
+          )}
+
+          <View style={[styles.listFooter, { paddingBottom: 20 + insets.bottom }]}>
+            <TouchableOpacity style={styles.listAddBtn} onPress={onAdd}>
+              <Plus size={18} color={PAPER} />
+              <Text style={styles.listAddBtnText}>Agregar producto</Text>
+            </TouchableOpacity>
+          </View>
+        </>
       )}
-
-      <BottomBar
-        disabled={!currentItem}
-        onSwipeLeft={() => cardRef.current?.triggerSwipe("left")}
-        onSwipeRight={() => cardRef.current?.triggerSwipe("right")}
-        onAdd={onAdd}
-      />
     </View>
   );
 }
@@ -179,6 +232,20 @@ const styles = StyleSheet.create({
   logo: { fontSize: 22, letterSpacing: 1.5, color: PAPER, fontWeight: "800" },
   tagline: { fontSize: 12, color: "#C9CDBE", marginTop: 2 },
   headerActions: { flexDirection: "row", gap: 10 },
+  stripRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    backgroundColor: PAPER,
+    borderBottomWidth: 1,
+    borderBottomColor: PAPER_DARK,
+  },
+  viewModeBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    borderRightWidth: 1,
+    borderRightColor: PAPER_DARK,
+  },
   cartBtn: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 12,
@@ -267,4 +334,15 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   skipBtnText: { fontSize: 13, fontWeight: "600", color: MUTED },
+  listFooter: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 4 },
+  listAddBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: AWNING,
+    borderRadius: 10,
+    paddingVertical: 14,
+  },
+  listAddBtnText: { fontSize: 14, fontWeight: "600", color: PAPER },
 });
