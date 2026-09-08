@@ -114,6 +114,14 @@ export function useTrips(categories: Category[], catalogLoaded: boolean) {
     });
   };
 
+  const deleteTrip = (id: string) => {
+    setData((prev) => {
+      if (!prev.trips[id]) return prev;
+      const { [id]: _removed, ...rest } = prev.trips;
+      return { trips: rest };
+    });
+  };
+
   return {
     activeTrips,
     historyTrips,
@@ -124,5 +132,6 @@ export function useTrips(categories: Category[], catalogLoaded: boolean) {
     startNewList,
     finishTrip,
     reactivateTrip,
+    deleteTrip,
   };
 }

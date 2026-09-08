@@ -1,7 +1,7 @@
-import { ChevronRight, Plus } from "lucide-react-native";
+import { ChevronRight, Pencil, Plus, ShoppingBag, Trash2 } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Trip } from "../data/types";
-import { AWNING, INK, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
+import { AWNING, BRICK, INK, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
 
 type Props = {
   activeTrips: Trip[];
@@ -9,6 +9,7 @@ type Props = {
   onStartNew: () => void;
   onBuy: (tripId: string) => void;
   onEdit: (tripId: string) => void;
+  onDelete: (tripId: string) => void;
   onOpenHistory: (tripId: string) => void;
 };
 
@@ -25,6 +26,7 @@ export function HomeScreen({
   onStartNew,
   onBuy,
   onEdit,
+  onDelete,
   onOpenHistory,
 }: Props) {
   return (
@@ -51,12 +53,14 @@ export function HomeScreen({
                   {" "}comprados
                 </Text>
                 <View style={styles.activeActions}>
-                  <TouchableOpacity style={styles.ghostBtn} onPress={() => onEdit(trip.id)}>
-                    <Text style={styles.ghostBtnText}>Editar</Text>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => onDelete(trip.id)}>
+                    <Trash2 size={18} color={BRICK} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => onEdit(trip.id)}>
+                    <Pencil size={18} color={AWNING} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.primaryBtn} onPress={() => onBuy(trip.id)}>
-                    <Text style={styles.primaryBtnText}>Comprar</Text>
-                    <ChevronRight size={16} color={PAPER} />
+                    <ShoppingBag size={18} color={PAPER} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -132,16 +136,15 @@ const styles = StyleSheet.create({
   activeDate: { fontSize: 13, color: MUTED },
   activeCount: { fontSize: 18, fontWeight: "700", color: INK, marginTop: 4 },
   activeActions: { flexDirection: "row", gap: 10, marginTop: 16 },
-  ghostBtn: {
-    flex: 1,
+  iconBtn: {
+    width: 44,
     alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1.5,
     borderColor: "#E7E2D0",
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 12,
   },
-  ghostBtnText: { fontSize: 14, fontWeight: "600", color: AWNING },
   primaryBtn: {
     flex: 1,
     flexDirection: "row",
@@ -153,7 +156,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  primaryBtnText: { fontSize: 14, fontWeight: "600", color: PAPER },
   newListBtn: {
     flexDirection: "row",
     alignItems: "center",

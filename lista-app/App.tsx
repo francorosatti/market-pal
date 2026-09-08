@@ -39,6 +39,7 @@ export default function App() {
     startNewList,
     finishTrip,
     reactivateTrip,
+    deleteTrip,
   } = useTrips(categories, catalogLoaded);
 
   const openTrip = openTripId ? activeTrips.find((t) => t.id === openTripId) ?? null : null;
@@ -92,6 +93,17 @@ export default function App() {
     setList(openTripId!, newList);
   };
 
+  const handleDeleteTrip = (tripId: string) => {
+    Alert.alert("Eliminar lista", "¿Eliminar esta lista? Esta acción no se puede deshacer.", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: () => deleteTrip(tripId),
+      },
+    ]);
+  };
+
   const handleClear = () => {
     if (list.length === 0) return;
     Alert.alert("Vaciar lista", "¿Vaciar la lista actual?", [
@@ -143,6 +155,7 @@ export default function App() {
             setOpenTripId(tripId);
             setView("swipe");
           }}
+          onDelete={handleDeleteTrip}
           onOpenHistory={(id) => {
             setViewingTripId(id);
             setView("historyDetail");
