@@ -1,4 +1,4 @@
-import { ChevronRight, Pencil, Plus, ShoppingBag, Trash2 } from "lucide-react-native";
+import { ChevronRight, Pencil, Plus, ShoppingCart, Trash2 } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Trip } from "../data/types";
@@ -62,7 +62,7 @@ export function HomeScreen({
                     <Pencil size={18} color={AWNING} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.primaryBtn} onPress={() => onBuy(trip.id)}>
-                    <ShoppingBag size={18} color={PAPER} />
+                    <ShoppingCart size={18} color={PAPER} />
                   </TouchableOpacity>
                 </View>
               </View>

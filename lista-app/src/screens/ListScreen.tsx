@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Trash2 } from "lucide-react-native";
+import { Check, Home, Pencil, Trash2 } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Category, ListItem } from "../data/types";
@@ -7,7 +7,8 @@ import { AWNING, BRICK, INK, MUTED, PAPER, PAPER_DARK, SAGE } from "../theme/col
 type Props = {
   list: ListItem[];
   categories: Category[];
-  onBack: () => void;
+  onOpenHome: () => void;
+  onOpenEdit?: () => void;
   onToggleBought: (id: string, categoryId: string) => void;
   onRemove: (id: string, categoryId: string) => void;
   onClear: () => void;
@@ -19,7 +20,8 @@ type Props = {
 export function ListScreen({
   list,
   categories,
-  onBack,
+  onOpenHome,
+  onOpenEdit,
   onToggleBought,
   onRemove,
   onClear,
@@ -35,16 +37,22 @@ export function ListScreen({
   return (
     <View style={styles.screen}>
       <View style={[styles.header, { paddingTop: 18 + insets.top }]}>
-        <TouchableOpacity style={styles.iconGhost} onPress={onBack} accessibilityLabel="Volver">
-          <ArrowLeft size={20} color={PAPER} />
-        </TouchableOpacity>
         <View style={{ alignItems: "center" }}>
           <Text style={styles.logo}>{readOnly ? "HISTORIAL" : "TU LISTA"}</Text>
           <Text style={styles.tagline}>
             {list.length} producto{list.length === 1 ? "" : "s"}
           </Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.iconGhost} onPress={onOpenHome} accessibilityLabel="Ir al inicio">
+            <Home size={20} color={PAPER} />
+          </TouchableOpacity>
+          {!readOnly && onOpenEdit && (
+            <TouchableOpacity style={styles.iconGhost} onPress={onOpenEdit} accessibilityLabel="Editar lista">
+              <Pencil size={20} color={PAPER} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
@@ -133,6 +141,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  headerActions: { flexDirection: "row", gap: 10 },
   iconGhost: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 12,

@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  logo: { fontSize: 26, letterSpacing: 1.5, color: PAPER, fontWeight: "800" },
+  logo: { fontSize: 22, letterSpacing: 1.5, color: PAPER, fontWeight: "800" },
   tagline: { fontSize: 12, color: "#C9CDBE", marginTop: 2 },
   headerActions: { flexDirection: "row", gap: 10 },
   cartBtn: {

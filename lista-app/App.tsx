@@ -205,7 +205,8 @@ export default function App() {
         <ListScreen
           list={list}
           categories={categories}
-          onBack={() => setView("swipe")}
+          onOpenHome={() => setView("home")}
+          onOpenEdit={() => setView("swipe")}
           onToggleBought={(id, categoryId) =>
             setList(openTripId!, (prev) => toggleBought(prev, id, categoryId))
           }
@@ -223,7 +224,7 @@ export default function App() {
         <ListScreen
           list={viewingTrip.list}
           categories={categories}
-          onBack={() => setView("home")}
+          onOpenHome={() => setView("home")}
           onToggleBought={() => {}}
           onRemove={() => {}}
           onClear={() => {}}
