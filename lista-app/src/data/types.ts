@@ -17,7 +17,13 @@ export type ListItem = {
 
 export type Catalog = { categories: Category[] };
 
+export type TripStatus = "active" | "done";
+
 export type Trip = {
+  id: string;
+  status: TripStatus;
+  createdAt: number;
+  completedAt: number | null;
   list: ListItem[];
   indices: Record<string, number>; // progreso de swipe por categoría
   currentCategoryId: string;

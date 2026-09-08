@@ -85,6 +85,9 @@ export function toggleBought(
   );
 }
 
+export const isListComplete = (list: ListItem[]): boolean =>
+  list.length > 0 && list.every((it) => it.bought);
+
 export function removeFromList(
   categories: Category[],
   list: ListItem[],

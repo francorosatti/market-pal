@@ -10,9 +10,20 @@ type Props = {
   onToggleBought: (id: string, categoryId: string) => void;
   onRemove: (id: string, categoryId: string) => void;
   onClear: () => void;
+  readOnly?: boolean;
+  onReactivate?: () => void;
 };
 
-export function ListScreen({ list, categories, onBack, onToggleBought, onRemove, onClear }: Props) {
+export function ListScreen({
+  list,
+  categories,
+  onBack,
+  onToggleBought,
+  onRemove,
+  onClear,
+  readOnly,
+  onReactivate,
+}: Props) {
   const byCategory = categories
     .map((cat) => ({ cat, items: list.filter((i) => i.categoryId === cat.id) }))
     .filter((g) => g.items.length > 0);
@@ -24,7 +35,7 @@ export function ListScreen({ list, categories, onBack, onToggleBought, onRemove,
           <ArrowLeft size={20} color={PAPER} />
         </TouchableOpacity>
         <View style={{ alignItems: "center" }}>
-          <Text style={styles.logo}>TU LISTA</Text>
+          <Text style={styles.logo}>{readOnly ? "HISTORIAL" : "TU LISTA"}</Text>
           <Text style={styles.tagline}>
             {list.length} producto{list.length === 1 ? "" : "s"}
           </Text>
@@ -54,7 +65,8 @@ export function ListScreen({ list, categories, onBack, onToggleBought, onRemove,
                       borderColor: it.bought ? SAGE : MUTED,
                     },
                   ]}
-                  onPress={() => onToggleBought(it.id, it.categoryId)}
+                  onPress={() => !readOnly && onToggleBought(it.id, it.categoryId)}
+                  disabled={readOnly}
                 >
                   {it.bought && <Check size={14} color={PAPER} />}
                 </TouchableOpacity>
@@ -66,25 +78,37 @@ export function ListScreen({ list, categories, onBack, onToggleBought, onRemove,
                 >
                   {it.name}
                 </Text>
-                <TouchableOpacity
-                  style={styles.trashBtn}
-                  onPress={() => onRemove(it.id, it.categoryId)}
-                  accessibilityLabel={`Borrar ${it.name}`}
-                >
-                  <Trash2 size={16} color={MUTED} />
-                </TouchableOpacity>
+                {!readOnly && (
+                  <TouchableOpacity
+                    style={styles.trashBtn}
+                    onPress={() => onRemove(it.id, it.categoryId)}
+                    accessibilityLabel={`Borrar ${it.name}`}
+                  >
+                    <Trash2 size={16} color={MUTED} />
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </View>
         ))}
       </ScrollView>
 
-      {list.length > 0 && (
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.dangerBtn} onPress={onClear}>
-            <Text style={styles.dangerBtnText}>Vaciar lista</Text>
-          </TouchableOpacity>
-        </View>
+      {readOnly ? (
+        onReactivate && (
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.reactivateBtn} onPress={onReactivate}>
+              <Text style={styles.reactivateBtnText}>Reactivar lista</Text>
+            </TouchableOpacity>
+          </View>
+        )
+      ) : (
+        list.length > 0 && (
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.dangerBtn} onPress={onClear}>
+              <Text style={styles.dangerBtnText}>Vaciar lista</Text>
+            </TouchableOpacity>
+          </View>
+        )
       )}
     </View>
   );
@@ -148,4 +172,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dangerBtnText: { color: BRICK, fontSize: 14, fontWeight: "600" },
+  reactivateBtn: {
+    backgroundColor: AWNING,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  reactivateBtnText: { color: PAPER, fontSize: 14, fontWeight: "600" },
 });

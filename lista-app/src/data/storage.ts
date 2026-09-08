@@ -3,7 +3,12 @@ import { buildInitialCatalog } from "./seed";
 import { Catalog, Trip } from "./types";
 
 const CATALOG_KEY = "catalog";
-const TRIP_KEY = "trip";
+const TRIPS_KEY = "trips";
+
+export type TripsData = {
+  trips: Record<string, Trip>;
+  activeTripId: string | null;
+};
 
 export async function getCatalog(): Promise<Catalog> {
   const raw = await AsyncStorage.getItem(CATALOG_KEY);
@@ -21,22 +26,42 @@ export async function setCatalog(catalog: Catalog): Promise<void> {
   await AsyncStorage.setItem(CATALOG_KEY, JSON.stringify(catalog));
 }
 
-export async function getTrip(): Promise<Trip> {
-  const empty: Trip = { list: [], indices: {}, currentCategoryId: "" };
-  const raw = await AsyncStorage.getItem(TRIP_KEY);
+function parseTrip(raw: any): Trip | null {
+  if (!raw || typeof raw !== "object" || typeof raw.id !== "string") return null;
+  return {
+    id: raw.id,
+    status: raw.status === "done" ? "done" : "active",
+    createdAt: typeof raw.createdAt === "number" ? raw.createdAt : Date.now(),
+    completedAt: typeof raw.completedAt === "number" ? raw.completedAt : null,
+    list: Array.isArray(raw.list) ? raw.list : [],
+    indices: raw.indices && typeof raw.indices === "object" ? raw.indices : {},
+    currentCategoryId: raw.currentCategoryId ?? "",
+  };
+}
+
+export async function getTripsData(): Promise<TripsData> {
+  const empty: TripsData = { trips: {}, activeTripId: null };
+  const raw = await AsyncStorage.getItem(TRIPS_KEY);
   if (!raw) return empty;
   try {
     const parsed = JSON.parse(raw);
-    return {
-      list: Array.isArray(parsed.list) ? parsed.list : [],
-      indices: parsed.indices && typeof parsed.indices === "object" ? parsed.indices : {},
-      currentCategoryId: parsed.currentCategoryId ?? "",
-    };
+    const trips: Record<string, Trip> = {};
+    if (parsed.trips && typeof parsed.trips === "object") {
+      for (const [id, rawTrip] of Object.entries(parsed.trips)) {
+        const trip = parseTrip(rawTrip);
+        if (trip) trips[id] = trip;
+      }
+    }
+    const activeTripId =
+      typeof parsed.activeTripId === "string" && trips[parsed.activeTripId]
+        ? parsed.activeTripId
+        : null;
+    return { trips, activeTripId };
   } catch {
     return empty;
   }
 }
 
-export async function setTrip(trip: Trip): Promise<void> {
-  await AsyncStorage.setItem(TRIP_KEY, JSON.stringify(trip));
+export async function setTripsData(data: TripsData): Promise<void> {
+  await AsyncStorage.setItem(TRIPS_KEY, JSON.stringify(data));
 }

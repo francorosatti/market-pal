@@ -12,19 +12,25 @@ import {
 } from "./src/data/catalogLogic";
 import { Category, Product } from "./src/data/types";
 import { useCatalog } from "./src/hooks/useCatalog";
-import { useTrip } from "./src/hooks/useTrip";
+import { useTrips } from "./src/hooks/useTrips";
+import { HomeScreen } from "./src/screens/HomeScreen";
 import { ListScreen } from "./src/screens/ListScreen";
 import { SwipeScreen } from "./src/screens/SwipeScreen";
 import { AWNING_DARK, PAPER } from "./src/theme/colors";
 
 const NEW_CATEGORY = "__new__";
 
+type ViewName = "home" | "swipe" | "list" | "historyDetail";
+
 export default function App() {
-  const [view, setView] = useState<"swipe" | "list">("swipe");
+  const [view, setView] = useState<ViewName>("home");
   const [showAdd, setShowAdd] = useState(false);
+  const [viewingTripId, setViewingTripId] = useState<string | null>(null);
 
   const { categories, setCategories, loaded: catalogLoaded } = useCatalog();
   const {
+    activeTrip,
+    historyTrips,
     list,
     setList,
     indices,
@@ -32,7 +38,10 @@ export default function App() {
     currentCategoryId,
     setCurrentCategoryId,
     loaded: tripLoaded,
-  } = useTrip(categories, catalogLoaded);
+    startNewList,
+    finishActiveList,
+    reactivateTrip,
+  } = useTrips(categories, catalogLoaded);
 
   const handleAccept = (item: Product, categoryId: string) => {
     setCategories((prev) => bumpFreq(prev, categoryId, item.id));
@@ -103,9 +112,28 @@ export default function App() {
     );
   }
 
+  const viewingTrip = viewingTripId ? historyTrips.find((t) => t.id === viewingTripId) ?? null : null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {view === "swipe" ? (
+      {view === "home" && (
+        <HomeScreen
+          activeTrip={activeTrip}
+          historyTrips={historyTrips}
+          onStartNew={() => {
+            startNewList();
+            setView("swipe");
+          }}
+          onContinue={() => setView("swipe")}
+          onFinish={finishActiveList}
+          onOpenHistory={(id) => {
+            setViewingTripId(id);
+            setView("historyDetail");
+          }}
+        />
+      )}
+
+      {view === "swipe" && (
         <SwipeScreen
           categories={categories}
           currentCategoryId={currentCategoryId}
@@ -115,9 +143,12 @@ export default function App() {
           onAccept={handleAccept}
           listCount={list.length}
           onOpenList={() => setView("list")}
+          onOpenHome={() => setView("home")}
           onAdd={() => setShowAdd(true)}
         />
-      ) : (
+      )}
+
+      {view === "list" && (
         <ListScreen
           list={list}
           categories={categories}
@@ -125,6 +156,22 @@ export default function App() {
           onToggleBought={(id, categoryId) => setList((prev) => toggleBought(prev, id, categoryId))}
           onRemove={handleRemove}
           onClear={handleClear}
+        />
+      )}
+
+      {view === "historyDetail" && viewingTrip && (
+        <ListScreen
+          list={viewingTrip.list}
+          categories={categories}
+          onBack={() => setView("home")}
+          onToggleBought={() => {}}
+          onRemove={() => {}}
+          onClear={() => {}}
+          readOnly
+          onReactivate={() => {
+            reactivateTrip(viewingTrip.id);
+            setView("swipe");
+          }}
         />
       )}
 

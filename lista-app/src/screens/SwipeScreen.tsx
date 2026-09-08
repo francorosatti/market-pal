@@ -1,4 +1,4 @@
-import { ChevronRight, RotateCcw, ShoppingCart } from "lucide-react-native";
+import { ChevronRight, Home, RotateCcw, ShoppingCart } from "lucide-react-native";
 import { useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BottomBar } from "../components/BottomBar";
@@ -17,6 +17,7 @@ type Props = {
   onAccept: (item: Product, categoryId: string) => void;
   listCount: number;
   onOpenList: () => void;
+  onOpenHome: () => void;
   onAdd: () => void;
 };
 
@@ -29,6 +30,7 @@ export function SwipeScreen({
   onAccept,
   listCount,
   onOpenList,
+  onOpenHome,
   onAdd,
 }: Props) {
   const cardRef = useRef<SwipeCardHandle>(null);
@@ -72,14 +74,19 @@ export function SwipeScreen({
           <Text style={styles.logo}>LA LISTA</Text>
           <Text style={styles.tagline}>deslizá para armar tu compra</Text>
         </View>
-        <TouchableOpacity style={styles.cartBtn} onPress={onOpenList} accessibilityLabel="Ver lista">
-          <ShoppingCart size={20} color={PAPER} />
-          {listCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{listCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.cartBtn} onPress={onOpenHome} accessibilityLabel="Ir al inicio">
+            <Home size={20} color={PAPER} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cartBtn} onPress={onOpenList} accessibilityLabel="Ver lista">
+            <ShoppingCart size={20} color={PAPER} />
+            {listCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{listCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <CategoryStrip
@@ -152,6 +159,7 @@ const styles = StyleSheet.create({
   },
   logo: { fontSize: 26, letterSpacing: 1.5, color: PAPER, fontWeight: "800" },
   tagline: { fontSize: 12, color: "#C9CDBE", marginTop: 2 },
+  headerActions: { flexDirection: "row", gap: 10 },
   cartBtn: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 12,
