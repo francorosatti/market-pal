@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { Check } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findMatches } from "../data/catalogLogic";
 import { Category } from "../data/types";
 import { AWNING, INK, MUTED, PAPER, PAPER_DARK, SAGE } from "../theme/colors";
@@ -40,6 +41,7 @@ export function AddModal({
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addToList, setAddToList] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const { exact, similar } = useMemo(
     () => findMatches(categories, name),
@@ -54,7 +56,7 @@ export function AddModal({
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.card}>
+        <View style={[styles.card, { paddingBottom: 22 + insets.bottom }]}>
           <Text style={styles.title}>Agregar producto</Text>
           <TextInput
             autoFocus

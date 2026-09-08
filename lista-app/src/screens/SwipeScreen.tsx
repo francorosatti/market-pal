@@ -1,6 +1,7 @@
 import { ChevronRight, Home, RotateCcw, ShoppingCart } from "lucide-react-native";
 import { useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomBar } from "../components/BottomBar";
 import { CategoryStrip } from "../components/CategoryStrip";
 import { SwipeCard, SwipeCardHandle } from "../components/SwipeCard";
@@ -36,6 +37,7 @@ export function SwipeScreen({
   onAdd,
 }: Props) {
   const cardRef = useRef<SwipeCardHandle>(null);
+  const insets = useSafeAreaInsets();
 
   const currentCategory = categories.find((c) => c.id === currentCategoryId) ?? categories[0];
   const items = sortedItems(currentCategory);
@@ -80,7 +82,7 @@ export function SwipeScreen({
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: 18 + insets.top }]}>
         <View>
           <Text style={styles.logo}>LA LISTA</Text>
           <Text style={styles.tagline}>deslizá para armar tu compra</Text>
@@ -168,7 +170,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: PAPER },
   header: {
     backgroundColor: AWNING,
-    paddingTop: 18,
     paddingHorizontal: 20,
     paddingBottom: 14,
     flexDirection: "row",

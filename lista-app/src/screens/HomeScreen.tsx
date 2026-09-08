@@ -1,5 +1,6 @@
 import { ChevronRight, Pencil, Plus, ShoppingBag, Trash2 } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Trip } from "../data/types";
 import { AWNING, BRICK, INK, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
 
@@ -29,16 +30,17 @@ export function HomeScreen({
   onDelete,
   onOpenHistory,
 }: Props) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: 18 + insets.top }]}>
         <View>
           <Text style={styles.logo}>LA LISTA</Text>
           <Text style={styles.tagline}>tus compras, a mano</Text>
         </View>
       </View>
 
-      <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 + insets.bottom }}>
         <Text style={styles.sectionTitle}>Listas en curso</Text>
         {activeTrips.length === 0 ? (
           <Text style={styles.emptyState}>No tenés listas en curso.</Text>
@@ -106,7 +108,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: PAPER },
   header: {
     backgroundColor: AWNING,
-    paddingTop: 18,
     paddingHorizontal: 20,
     paddingBottom: 14,
     flexDirection: "row",

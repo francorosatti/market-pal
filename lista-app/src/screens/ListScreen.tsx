@@ -1,5 +1,6 @@
 import { ArrowLeft, Check, Trash2 } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Category, ListItem } from "../data/types";
 import { AWNING, BRICK, INK, MUTED, PAPER, PAPER_DARK, SAGE } from "../theme/colors";
 
@@ -26,13 +27,14 @@ export function ListScreen({
   readOnly,
   onReactivate,
 }: Props) {
+  const insets = useSafeAreaInsets();
   const byCategory = categories
     .map((cat) => ({ cat, items: list.filter((i) => i.categoryId === cat.id) }))
     .filter((g) => g.items.length > 0);
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: 18 + insets.top }]}>
         <TouchableOpacity style={styles.iconGhost} onPress={onBack} accessibilityLabel="Volver">
           <ArrowLeft size={20} color={PAPER} />
         </TouchableOpacity>
@@ -97,7 +99,7 @@ export function ListScreen({
 
       {readOnly ? (
         onReactivate && (
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
             <TouchableOpacity style={styles.reactivateBtn} onPress={onReactivate}>
               <Text style={styles.reactivateBtnText}>Reactivar lista</Text>
             </TouchableOpacity>
@@ -105,7 +107,7 @@ export function ListScreen({
         )
       ) : (
         list.length > 0 && (
-          <View style={[styles.footer, styles.footerRow]}>
+          <View style={[styles.footer, styles.footerRow, { paddingBottom: 20 + insets.bottom }]}>
             <TouchableOpacity style={[styles.dangerBtn, { flex: 1 }]} onPress={onClear}>
               <Text style={styles.dangerBtnText}>Vaciar lista</Text>
             </TouchableOpacity>
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: PAPER },
   header: {
     backgroundColor: AWNING,
-    paddingTop: 18,
     paddingHorizontal: 20,
     paddingBottom: 14,
     flexDirection: "row",
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
   },
   itemName: { flex: 1, marginLeft: 10, fontSize: 14, color: INK },
   trashBtn: { padding: 6 },
-  footer: { paddingHorizontal: 20, paddingBottom: 20 },
+  footer: { paddingHorizontal: 20 },
   footerRow: { flexDirection: "row", gap: 10 },
   dangerBtn: {
     borderWidth: 1.5,

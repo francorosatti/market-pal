@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AddModal } from "./src/components/AddModal";
 import {
   addExistingItem,
@@ -157,6 +158,7 @@ export default function App() {
   const viewingTrip = viewingTripId ? historyTrips.find((t) => t.id === viewingTripId) ?? null : null;
 
   return (
+    <SafeAreaProvider>
     <GestureHandlerRootView style={{ flex: 1 }}>
       {view === "home" && (
         <HomeScreen
@@ -245,6 +247,7 @@ export default function App() {
 
       <StatusBar style="light" />
     </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 

@@ -1,5 +1,6 @@
 import { Check, Plus, X } from "lucide-react-native";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BRICK, INK, PAPER, PAPER_DARK, SAGE } from "../theme/colors";
 
 type Props = {
@@ -10,8 +11,9 @@ type Props = {
 };
 
 export function BottomBar({ onSwipeLeft, onSwipeRight, onAdd, disabled }: Props) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.bar}>
+    <View style={[styles.bar, { paddingBottom: 28 + insets.bottom }]}>
       <TouchableOpacity
         style={[styles.circleBtn, styles.big, { backgroundColor: BRICK }]}
         onPress={onSwipeLeft}
@@ -46,7 +48,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 24,
     paddingVertical: 16,
-    paddingBottom: 28,
   },
   circleBtn: {
     width: 46,
