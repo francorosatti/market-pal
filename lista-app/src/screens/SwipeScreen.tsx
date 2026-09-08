@@ -5,11 +5,12 @@ import { BottomBar } from "../components/BottomBar";
 import { CategoryStrip } from "../components/CategoryStrip";
 import { SwipeCard, SwipeCardHandle } from "../components/SwipeCard";
 import { sortedItems } from "../data/catalogLogic";
-import { Category, Product } from "../data/types";
+import { Category, ListItem, Product } from "../data/types";
 import { AWNING, MUSTARD, MUTED, PAPER } from "../theme/colors";
 
 type Props = {
   categories: Category[];
+  list: ListItem[];
   currentCategoryId: string;
   setCurrentCategoryId: (id: string) => void;
   indices: Record<string, number>;
@@ -23,6 +24,7 @@ type Props = {
 
 export function SwipeScreen({
   categories,
+  list,
   currentCategoryId,
   setCurrentCategoryId,
   indices,
@@ -37,10 +39,19 @@ export function SwipeScreen({
 
   const currentCategory = categories.find((c) => c.id === currentCategoryId) ?? categories[0];
   const items = sortedItems(currentCategory);
-  const currentIndex = indices[currentCategoryId] || 0;
+  const isInList = (item: Product) =>
+    list.some((li) => li.id === item.id && li.categoryId === currentCategoryId);
+
+  // Los productos ya agregados a la lista (por swipe o manualmente) no deben
+  // volver a mostrarse para swipear, aunque el índice guardado los alcance.
+  let currentIndex = indices[currentCategoryId] || 0;
+  while (currentIndex < items.length && isInList(items[currentIndex])) currentIndex++;
+  let nextIndex = currentIndex + 1;
+  while (nextIndex < items.length && isInList(items[nextIndex])) nextIndex++;
+
   const currentItem = items[currentIndex];
-  const nextItem = items[currentIndex + 1];
-  const remaining = Math.max(items.length - currentIndex, 0);
+  const nextItem = items[nextIndex];
+  const remaining = items.slice(currentIndex).filter((it) => !isInList(it)).length;
 
   const advance = () => {
     setIndices((prev) => ({ ...prev, [currentCategoryId]: currentIndex + 1 }));

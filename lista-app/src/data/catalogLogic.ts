@@ -39,7 +39,7 @@ export function upsertItem(
     );
     item = newItems[existingIdx];
   } else {
-    item = { id: uid(), name, freq: 1 };
+    item = { id: uid(), name, freq: 0 };
     newItems = [...cat.items, item];
     isNew = true;
   }
@@ -47,6 +47,67 @@ export function upsertItem(
     i === catIndex ? { ...c, items: newItems } : c
   );
   return { categories: newCategories, item, isNew };
+}
+
+export type CatalogMatch = { item: Product; categoryId: string };
+
+/**
+ * Busca coincidencias de un nombre en todo el catálogo: exacta (mismo nombre
+ * normalizado) y similares (contención de substring en cualquier dirección).
+ */
+export function findMatches(
+  categories: Category[],
+  rawName: string
+): { exact: CatalogMatch | null; similar: CatalogMatch[] } {
+  const target = norm(rawName.trim());
+  if (!target) return { exact: null, similar: [] };
+
+  let exact: CatalogMatch | null = null;
+  const similar: CatalogMatch[] = [];
+
+  for (const cat of categories) {
+    for (const item of cat.items) {
+      const itemNorm = norm(item.name);
+      if (itemNorm === target) {
+        exact = { item, categoryId: cat.id };
+      } else if (itemNorm.includes(target) || target.includes(itemNorm)) {
+        similar.push({ item, categoryId: cat.id });
+      }
+    }
+  }
+
+  return { exact, similar };
+}
+
+/**
+ * Crea un producto nuevo en una categoría sin tocar ninguna lista.
+ * Devuelve { categories, item } de forma inmutable.
+ */
+export function createItem(
+  categories: Category[],
+  categoryId: string,
+  rawName: string
+): { categories: Category[]; item: Product | null } {
+  const name = cap(rawName.trim());
+  const catIndex = categories.findIndex((c) => c.id === categoryId);
+  if (catIndex === -1) return { categories, item: null };
+  const item: Product = { id: uid(), name, freq: 0 };
+  const newCategories = categories.map((c, i) =>
+    i === catIndex ? { ...c, items: [...c.items, item] } : c
+  );
+  return { categories: newCategories, item };
+}
+
+/**
+ * Suma 1 a la frecuencia de un producto existente identificado por id.
+ * Equivalente a bumpFreq pero pensado para el flujo de agregado manual.
+ */
+export function addExistingItem(
+  categories: Category[],
+  categoryId: string,
+  itemId: string
+): Category[] {
+  return bumpFreq(categories, categoryId, itemId);
 }
 
 export function addToList(

@@ -4,11 +4,12 @@ import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AddModal } from "./src/components/AddModal";
 import {
+  addExistingItem,
   addToList,
   bumpFreq,
+  createItem,
   removeFromList,
   toggleBought,
-  upsertItem,
 } from "./src/data/catalogLogic";
 import { Category, Product } from "./src/data/types";
 import { useCatalog } from "./src/hooks/useCatalog";
@@ -52,14 +53,33 @@ export default function App() {
     setList(openTripId!, (prev) => addToList(prev, item, categoryId));
   };
 
-  const handleManualAdd = ({
+  const handleSelectExisting = ({
+    itemId,
+    categoryId,
+  }: {
+    itemId: string;
+    categoryId: string;
+  }) => {
+    setCategories((prev) => addExistingItem(prev, categoryId, itemId));
+    setList(openTripId!, (prev) => {
+      const cat = categories.find((c) => c.id === categoryId);
+      const item = cat?.items.find((it) => it.id === itemId);
+      return item ? addToList(prev, item, categoryId) : prev;
+    });
+    setCurrentCategoryId(openTripId!, categoryId);
+    setShowAdd(false);
+  };
+
+  const handleCreateNew = ({
     name,
     categoryId,
     newCategoryName,
+    addToList: shouldAddToList,
   }: {
     name: string;
     categoryId: string;
     newCategoryName: string;
+    addToList: boolean;
   }) => {
     if (!name.trim()) return;
 
@@ -78,9 +98,9 @@ export default function App() {
       targetId = id;
     }
 
-    const { categories: updated, item } = upsertItem(cats, targetId, name);
+    const { categories: updated, item } = createItem(cats, targetId, name);
     setCategories(updated);
-    if (item) {
+    if (item && shouldAddToList) {
       setList(openTripId!, (prev) => addToList(prev, item, targetId));
     }
     setCurrentCategoryId(openTripId!, targetId);
@@ -166,6 +186,7 @@ export default function App() {
       {view === "swipe" && (
         <SwipeScreen
           categories={categories}
+          list={list}
           currentCategoryId={currentCategoryId}
           setCurrentCategoryId={(id) => setCurrentCategoryId(openTripId!, id)}
           indices={indices}
@@ -217,7 +238,8 @@ export default function App() {
           categories={categories}
           defaultCategoryId={currentCategoryId}
           onClose={() => setShowAdd(false)}
-          onSubmit={handleManualAdd}
+          onSelectExisting={handleSelectExisting}
+          onCreateNew={handleCreateNew}
         />
       )}
 
