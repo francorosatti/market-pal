@@ -7,7 +7,6 @@ const TRIPS_KEY = "trips";
 
 export type TripsData = {
   trips: Record<string, Trip>;
-  activeTripId: string | null;
 };
 
 export async function getCatalog(): Promise<Catalog> {
@@ -40,7 +39,7 @@ function parseTrip(raw: any): Trip | null {
 }
 
 export async function getTripsData(): Promise<TripsData> {
-  const empty: TripsData = { trips: {}, activeTripId: null };
+  const empty: TripsData = { trips: {} };
   const raw = await AsyncStorage.getItem(TRIPS_KEY);
   if (!raw) return empty;
   try {
@@ -52,11 +51,7 @@ export async function getTripsData(): Promise<TripsData> {
         if (trip) trips[id] = trip;
       }
     }
-    const activeTripId =
-      typeof parsed.activeTripId === "string" && trips[parsed.activeTripId]
-        ? parsed.activeTripId
-        : null;
-    return { trips, activeTripId };
+    return { trips };
   } catch {
     return empty;
   }

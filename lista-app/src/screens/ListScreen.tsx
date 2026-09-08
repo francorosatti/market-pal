@@ -10,6 +10,7 @@ type Props = {
   onToggleBought: (id: string, categoryId: string) => void;
   onRemove: (id: string, categoryId: string) => void;
   onClear: () => void;
+  onFinish?: () => void;
   readOnly?: boolean;
   onReactivate?: () => void;
 };
@@ -21,6 +22,7 @@ export function ListScreen({
   onToggleBought,
   onRemove,
   onClear,
+  onFinish,
   readOnly,
   onReactivate,
 }: Props) {
@@ -103,10 +105,15 @@ export function ListScreen({
         )
       ) : (
         list.length > 0 && (
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.dangerBtn} onPress={onClear}>
+          <View style={[styles.footer, styles.footerRow]}>
+            <TouchableOpacity style={[styles.dangerBtn, { flex: 1 }]} onPress={onClear}>
               <Text style={styles.dangerBtnText}>Vaciar lista</Text>
             </TouchableOpacity>
+            {onFinish && (
+              <TouchableOpacity style={[styles.reactivateBtn, { flex: 1 }]} onPress={onFinish}>
+                <Text style={styles.reactivateBtnText}>Terminar lista</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )
       )}
@@ -164,6 +171,7 @@ const styles = StyleSheet.create({
   itemName: { flex: 1, marginLeft: 10, fontSize: 14, color: INK },
   trashBtn: { padding: 6 },
   footer: { paddingHorizontal: 20, paddingBottom: 20 },
+  footerRow: { flexDirection: "row", gap: 10 },
   dangerBtn: {
     borderWidth: 1.5,
     borderColor: BRICK,

@@ -20,7 +20,7 @@ function archive(trip: Trip): Trip {
 }
 
 export function useTrips(categories: Category[], catalogLoaded: boolean) {
-  const [data, setData] = useState<TripsData>({ trips: {}, activeTripId: null });
+  const [data, setData] = useState<TripsData>({ trips: {} });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -40,95 +40,89 @@ export function useTrips(categories: Category[], catalogLoaded: boolean) {
     setTripsData(data).catch(() => {});
   }, [data, loaded]);
 
-  const activeTrip = data.activeTripId ? data.trips[data.activeTripId] ?? null : null;
+  const activeTrips = Object.values(data.trips)
+    .filter((t) => t.status === "active")
+    .sort((a, b) => b.createdAt - a.createdAt);
   const historyTrips = Object.values(data.trips)
     .filter((t) => t.status === "done")
     .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
 
-  const updateActiveTrip = (updater: (trip: Trip) => Trip) => {
+  const updateTrip = (tripId: string, updater: (trip: Trip) => Trip) => {
     setData((prev) => {
-      if (!prev.activeTripId) return prev;
-      const current = prev.trips[prev.activeTripId];
+      const current = prev.trips[tripId];
       if (!current) return prev;
       const updated = updater(current);
-      return { ...prev, trips: { ...prev.trips, [updated.id]: updated } };
+      return { trips: { ...prev.trips, [updated.id]: updated } };
     });
   };
 
-  const setList = (updater: ListItem[] | ((prev: ListItem[]) => ListItem[])) => {
+  const setList = (
+    tripId: string,
+    updater: ListItem[] | ((prev: ListItem[]) => ListItem[])
+  ) => {
     setData((prev) => {
-      if (!prev.activeTripId) return prev;
-      const current = prev.trips[prev.activeTripId];
+      const current = prev.trips[tripId];
       if (!current) return prev;
       const newList = typeof updater === "function" ? (updater as any)(current.list) : updater;
       if (isListComplete(newList)) {
         const done = archive({ ...current, list: newList });
-        return { trips: { ...prev.trips, [done.id]: done }, activeTripId: null };
+        return { trips: { ...prev.trips, [done.id]: done } };
       }
-      return { ...prev, trips: { ...prev.trips, [current.id]: { ...current, list: newList } } };
+      return { trips: { ...prev.trips, [tripId]: { ...current, list: newList } } };
     });
   };
 
   const setIndices = (
+    tripId: string,
     updater:
       | Record<string, number>
       | ((prev: Record<string, number>) => Record<string, number>)
   ) => {
-    updateActiveTrip((trip) => ({
+    updateTrip(tripId, (trip) => ({
       ...trip,
       indices: typeof updater === "function" ? (updater as any)(trip.indices) : updater,
     }));
   };
 
-  const setCurrentCategoryId = (id: string) => {
-    updateActiveTrip((trip) => ({ ...trip, currentCategoryId: id }));
+  const setCurrentCategoryId = (tripId: string, id: string) => {
+    updateTrip(tripId, (trip) => ({ ...trip, currentCategoryId: id }));
   };
 
-  const startNewList = () => {
-    setData((prev) => {
-      const trips = { ...prev.trips };
-      if (prev.activeTripId && trips[prev.activeTripId]) {
-        trips[prev.activeTripId] = archive(trips[prev.activeTripId]);
-      }
-      const newTrip = makeTrip(categories[0]?.id ?? "");
-      trips[newTrip.id] = newTrip;
-      return { trips, activeTripId: newTrip.id };
-    });
+  const startNewList = (): string => {
+    const newTrip = makeTrip(categories[0]?.id ?? "");
+    setData((prev) => ({ trips: { ...prev.trips, [newTrip.id]: newTrip } }));
+    return newTrip.id;
   };
 
-  const finishActiveList = () => {
+  const finishTrip = (tripId: string) => {
     setData((prev) => {
-      if (!prev.activeTripId || !prev.trips[prev.activeTripId]) return prev;
-      const trips = { ...prev.trips };
-      trips[prev.activeTripId] = archive(trips[prev.activeTripId]);
-      return { trips, activeTripId: null };
+      const current = prev.trips[tripId];
+      if (!current) return prev;
+      return { trips: { ...prev.trips, [tripId]: archive(current) } };
     });
   };
 
   const reactivateTrip = (id: string) => {
     setData((prev) => {
       if (!prev.trips[id]) return prev;
-      const trips = { ...prev.trips };
-      if (prev.activeTripId && trips[prev.activeTripId]) {
-        trips[prev.activeTripId] = archive(trips[prev.activeTripId]);
-      }
-      trips[id] = { ...trips[id], status: "active", completedAt: null };
-      return { trips, activeTripId: id };
+      return {
+        trips: {
+          ...prev.trips,
+          [id]: { ...prev.trips[id], status: "active", completedAt: null },
+        },
+      };
     });
   };
 
   return {
-    activeTrip,
+    activeTrips,
     historyTrips,
-    list: activeTrip?.list ?? [],
     setList,
-    indices: activeTrip?.indices ?? {},
     setIndices,
-    currentCategoryId: activeTrip?.currentCategoryId ?? "",
     setCurrentCategoryId,
     loaded,
     startNewList,
-    finishActiveList,
+    finishTrip,
     reactivateTrip,
   };
 }

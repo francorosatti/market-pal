@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AddModal } from "./src/components/AddModal";
@@ -26,26 +26,29 @@ export default function App() {
   const [view, setView] = useState<ViewName>("home");
   const [showAdd, setShowAdd] = useState(false);
   const [viewingTripId, setViewingTripId] = useState<string | null>(null);
+  const [openTripId, setOpenTripId] = useState<string | null>(null);
 
   const { categories, setCategories, loaded: catalogLoaded } = useCatalog();
   const {
-    activeTrip,
+    activeTrips,
     historyTrips,
-    list,
     setList,
-    indices,
     setIndices,
-    currentCategoryId,
     setCurrentCategoryId,
     loaded: tripLoaded,
     startNewList,
-    finishActiveList,
+    finishTrip,
     reactivateTrip,
   } = useTrips(categories, catalogLoaded);
 
+  const openTrip = openTripId ? activeTrips.find((t) => t.id === openTripId) ?? null : null;
+  const list = openTrip?.list ?? [];
+  const indices = openTrip?.indices ?? {};
+  const currentCategoryId = openTrip?.currentCategoryId ?? "";
+
   const handleAccept = (item: Product, categoryId: string) => {
     setCategories((prev) => bumpFreq(prev, categoryId, item.id));
-    setList((prev) => addToList(prev, item, categoryId));
+    setList(openTripId!, (prev) => addToList(prev, item, categoryId));
   };
 
   const handleManualAdd = ({
@@ -77,16 +80,16 @@ export default function App() {
     const { categories: updated, item } = upsertItem(cats, targetId, name);
     setCategories(updated);
     if (item) {
-      setList((prev) => addToList(prev, item, targetId));
+      setList(openTripId!, (prev) => addToList(prev, item, targetId));
     }
-    setCurrentCategoryId(targetId);
+    setCurrentCategoryId(openTripId!, targetId);
     setShowAdd(false);
   };
 
   const handleRemove = (id: string, categoryId: string) => {
     const { categories: newCats, list: newList } = removeFromList(categories, list, id, categoryId);
     setCategories(newCats);
-    setList(newList);
+    setList(openTripId!, newList);
   };
 
   const handleClear = () => {
@@ -97,12 +100,19 @@ export default function App() {
         text: "Vaciar",
         style: "destructive",
         onPress: () => {
-          setList([]);
-          setIndices({});
+          setList(openTripId!, []);
+          setIndices(openTripId!, {});
         },
       },
     ]);
   };
+
+  useEffect(() => {
+    if (view === "list" && !openTrip && historyTrips.length > 0) {
+      setViewingTripId(historyTrips[0].id);
+      setView("historyDetail");
+    }
+  }, [view, openTrip, historyTrips]);
 
   if (!catalogLoaded || !tripLoaded) {
     return (
@@ -118,14 +128,21 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       {view === "home" && (
         <HomeScreen
-          activeTrip={activeTrip}
+          activeTrips={activeTrips}
           historyTrips={historyTrips}
           onStartNew={() => {
-            startNewList();
+            const id = startNewList();
+            setOpenTripId(id);
             setView("swipe");
           }}
-          onContinue={() => setView("swipe")}
-          onFinish={finishActiveList}
+          onBuy={(tripId) => {
+            setOpenTripId(tripId);
+            setView("list");
+          }}
+          onEdit={(tripId) => {
+            setOpenTripId(tripId);
+            setView("swipe");
+          }}
           onOpenHistory={(id) => {
             setViewingTripId(id);
             setView("historyDetail");
@@ -137,9 +154,9 @@ export default function App() {
         <SwipeScreen
           categories={categories}
           currentCategoryId={currentCategoryId}
-          setCurrentCategoryId={setCurrentCategoryId}
+          setCurrentCategoryId={(id) => setCurrentCategoryId(openTripId!, id)}
           indices={indices}
-          setIndices={setIndices}
+          setIndices={(updater) => setIndices(openTripId!, updater)}
           onAccept={handleAccept}
           listCount={list.length}
           onOpenList={() => setView("list")}
@@ -153,9 +170,16 @@ export default function App() {
           list={list}
           categories={categories}
           onBack={() => setView("swipe")}
-          onToggleBought={(id, categoryId) => setList((prev) => toggleBought(prev, id, categoryId))}
+          onToggleBought={(id, categoryId) =>
+            setList(openTripId!, (prev) => toggleBought(prev, id, categoryId))
+          }
           onRemove={handleRemove}
           onClear={handleClear}
+          onFinish={() => {
+            finishTrip(openTripId!);
+            setOpenTripId(null);
+            setView("home");
+          }}
         />
       )}
 
@@ -170,7 +194,7 @@ export default function App() {
           readOnly
           onReactivate={() => {
             reactivateTrip(viewingTrip.id);
-            setView("swipe");
+            setView("home");
           }}
         />
       )}

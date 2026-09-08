@@ -4,28 +4,29 @@ import { Trip } from "../data/types";
 import { AWNING, INK, MUTED, PAPER, PAPER_DARK } from "../theme/colors";
 
 type Props = {
-  activeTrip: Trip | null;
+  activeTrips: Trip[];
   historyTrips: Trip[];
   onStartNew: () => void;
-  onContinue: () => void;
-  onFinish: () => void;
+  onBuy: (tripId: string) => void;
+  onEdit: (tripId: string) => void;
   onOpenHistory: (tripId: string) => void;
 };
 
 function formatDate(ts: number) {
-  return new Date(ts).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" });
+  const d = new Date(ts);
+  const day = d.getDate();
+  const month = d.toLocaleDateString("es-AR", { month: "long" });
+  return `${day} de ${month.charAt(0).toUpperCase()}${month.slice(1)}`;
 }
 
 export function HomeScreen({
-  activeTrip,
+  activeTrips,
   historyTrips,
   onStartNew,
-  onContinue,
-  onFinish,
+  onBuy,
+  onEdit,
   onOpenHistory,
 }: Props) {
-  const boughtCount = activeTrip?.list.filter((i) => i.bought).length ?? 0;
-
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -36,26 +37,31 @@ export function HomeScreen({
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
-        <Text style={styles.sectionTitle}>Lista en curso</Text>
-        {activeTrip ? (
-          <View style={styles.activeCard}>
-            <Text style={styles.activeDate}>Creada el {formatDate(activeTrip.createdAt)}</Text>
-            <Text style={styles.activeCount}>
-              {boughtCount}/{activeTrip.list.length} producto{activeTrip.list.length === 1 ? "" : "s"}
-              {" "}comprados
-            </Text>
-            <View style={styles.activeActions}>
-              <TouchableOpacity style={styles.ghostBtn} onPress={onFinish}>
-                <Text style={styles.ghostBtnText}>Terminar lista</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.primaryBtn} onPress={onContinue}>
-                <Text style={styles.primaryBtnText}>Continuar</Text>
-                <ChevronRight size={16} color={PAPER} />
-              </TouchableOpacity>
-            </View>
-          </View>
+        <Text style={styles.sectionTitle}>Listas en curso</Text>
+        {activeTrips.length === 0 ? (
+          <Text style={styles.emptyState}>No tenés listas en curso.</Text>
         ) : (
-          <Text style={styles.emptyState}>No tenés una lista en curso.</Text>
+          activeTrips.map((trip) => {
+            const boughtCount = trip.list.filter((i) => i.bought).length;
+            return (
+              <View key={trip.id} style={styles.activeCard}>
+                <Text style={styles.activeDate}>Creada el {formatDate(trip.createdAt)}</Text>
+                <Text style={styles.activeCount}>
+                  {boughtCount}/{trip.list.length} producto{trip.list.length === 1 ? "" : "s"}
+                  {" "}comprados
+                </Text>
+                <View style={styles.activeActions}>
+                  <TouchableOpacity style={styles.ghostBtn} onPress={() => onEdit(trip.id)}>
+                    <Text style={styles.ghostBtnText}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.primaryBtn} onPress={() => onBuy(trip.id)}>
+                    <Text style={styles.primaryBtnText}>Comprar</Text>
+                    <ChevronRight size={16} color={PAPER} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })
         )}
 
         <TouchableOpacity style={styles.newListBtn} onPress={onStartNew}>
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
     borderColor: PAPER_DARK,
     borderRadius: 16,
     padding: 18,
+    marginBottom: 12,
   },
   activeDate: { fontSize: 13, color: MUTED },
   activeCount: { fontSize: 18, fontWeight: "700", color: INK, marginTop: 4 },

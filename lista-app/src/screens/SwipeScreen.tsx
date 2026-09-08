@@ -136,6 +136,13 @@ export function SwipeScreen({
         {currentItem ? `${remaining} producto${remaining === 1 ? "" : "s"} en esta categoría` : ""}
       </Text>
 
+      {currentItem && categories.length > 1 && (
+        <TouchableOpacity style={styles.skipBtn} onPress={jumpToNextCategory}>
+          <Text style={styles.skipBtnText}>Saltar categoría</Text>
+          <ChevronRight size={14} color={MUTED} />
+        </TouchableOpacity>
+      )}
+
       <BottomBar
         disabled={!currentItem}
         onSwipeLeft={() => cardRef.current?.triggerSwipe("left")}
@@ -240,4 +247,12 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { fontSize: 14, fontWeight: "600", color: PAPER },
   counter: { textAlign: "center", fontSize: 12, color: MUTED, paddingVertical: 10 },
+  skipBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingBottom: 6,
+  },
+  skipBtnText: { fontSize: 13, fontWeight: "600", color: MUTED },
 });
