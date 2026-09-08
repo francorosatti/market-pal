@@ -4,7 +4,7 @@ A personal, fully offline shopping-list app for React Native (Expo) — swipe th
 
 ## Built with AI — spec-driven development
 
-This project is built through **spec-driven development with Claude Code**. The owner does not write code by hand here: features start as a written spec/prompt, and Claude Code implements them end to end. The original spec lives at [`specs/plan-implementacion-app-lista.md`](../specs/plan-implementacion-app-lista.md), and the working instructions for the AI agent are in [`CLAUDE.md`](./CLAUDE.md) and [`AGENTS.md`](./AGENTS.md). Any change to this app should keep going through that process rather than manual edits.
+This project is built through **spec-driven development with Claude Code**. The owner does not write code by hand here: features start as a written spec/prompt, and Claude Code implements them end to end. The original spec lives at [`specs/plan-implementacion-app-lista.md`](./specs/plan-implementacion-app-lista.md), and the working instructions for the AI agent are in [`CLAUDE.md`](./CLAUDE.md) and [`AGENTS.md`](./AGENTS.md). Any change to this app should keep going through that process rather than manual edits.
 
 ## Introduction
 
