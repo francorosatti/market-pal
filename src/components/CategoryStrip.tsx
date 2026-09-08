@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { LayoutChangeEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Category } from "../data/types";
 import { INK, PAPER, PAPER_DARK } from "../theme/colors";
 
@@ -10,12 +11,28 @@ type Props = {
 };
 
 export function CategoryStrip({ categories, currentCategoryId, onSelect, indices }: Props) {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const stripWidthRef = useRef(0);
+  const chipLayoutsRef = useRef<Record<string, { x: number; width: number }>>({});
+
+  useEffect(() => {
+    const layout = chipLayoutsRef.current[currentCategoryId];
+    const stripWidth = stripWidthRef.current;
+    if (!layout || !stripWidth) return;
+    const targetX = layout.x - stripWidth / 2 + layout.width / 2;
+    scrollViewRef.current?.scrollTo({ x: Math.max(targetX, 0), animated: true });
+  }, [currentCategoryId]);
+
   return (
     <ScrollView
+      ref={scrollViewRef}
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.strip}
       contentContainerStyle={styles.stripContent}
+      onLayout={(e: LayoutChangeEvent) => {
+        stripWidthRef.current = e.nativeEvent.layout.width;
+      }}
     >
       {categories.map((c) => {
         const left = Math.max(c.items.length - (indices[c.id] || 0), 0);
@@ -24,6 +41,12 @@ export function CategoryStrip({ categories, currentCategoryId, onSelect, indices
           <TouchableOpacity
             key={c.id}
             onPress={() => onSelect(c.id)}
+            onLayout={(e: LayoutChangeEvent) => {
+              chipLayoutsRef.current[c.id] = {
+                x: e.nativeEvent.layout.x,
+                width: e.nativeEvent.layout.width,
+              };
+            }}
             style={[styles.chip, { backgroundColor: active ? c.color : PAPER_DARK }]}
           >
             <Text style={[styles.chipText, { color: active ? PAPER : INK }]}>
